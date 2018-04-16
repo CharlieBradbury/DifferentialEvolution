@@ -1,12 +1,16 @@
 function DE(funcObj, populationSize, problemSize, Inf, Sup, F, CR, selectionType,crossover, maxIterations, maxEvaluations)
     X = generatePopulation(populationSize, problemSize, Inf, Sup);
     XF = zeros(populationSize, 1);
-    for i = 1 : populationSize
-        XF(i) = funcObj(X(i,:))
+    for k = 1 : populationSize
+        XF(k) = funcObj(X(k,:))
     end
     
+    globalMin = min(XF);
+    cantNoChange = 0;
+    i = 1;
+    
     %Stop when it has reach a fixed amount of evaluation of the fitness
-    for i = 1:maxEvaluations
+    while i <= maxEvaluations && cantNoChange < maxIterations
         %for each individual in the population
         for j= 1:populationSize
             %Trial or random selection of individuals
@@ -14,7 +18,7 @@ function DE(funcObj, populationSize, problemSize, Inf, Sup, F, CR, selectionType
             newSpecies = selectRandom(X)
             
             %Apply directional mutation 
-            if selectionType == 'random'
+            if strcmp(selectionType,'random')
                 V = X(newSpecies(1),:) + F * (X(newSpecies(2),:) - X(newSpecies(3)))
                 for k = 1 : problemSize
                     if V(k) > Sup(k)
@@ -22,11 +26,11 @@ function DE(funcObj, populationSize, problemSize, Inf, Sup, F, CR, selectionType
                     elseif V(k) < Inf(k)
                         V(k) = Inf(k);
                     end
-                end
-                
-            elseif selectionType == 'trial'
+                end 
+            elseif strcmp(selectionType,'trial')
                 %select the best newSpecies
-                V = X(newSpecies(1),:) + F * (X(newSpecies(2),:) - X(newSpecies(3)))
+                [~,bestIndex] = min(XF(newSpecies))
+                V = X(newSpecies(bestIndex),:) + F * (X(newSpecies(2),:) - X(newSpecies(3)))
             end
             %Apply to trial vector the crossover to produce a child
             n = floor(rand()*problemSize+1);
@@ -74,15 +78,23 @@ function DE(funcObj, populationSize, problemSize, Inf, Sup, F, CR, selectionType
         % Select the lowest fitness value
         minFit(i) = min(XF)
         
-         % plot the picture of iteration
-            figure(2);
-            plot(1:i,minFit,'r--');
-            xlabel('Iteration');
-            ylabel('Fitness');
-			title(sprintf('Iteration=%d, Fitness=%9.9f',i,minFit(i)));
-            grid on;
-            hold on;
+        if (globalMin == minFit(i))
+            cantNoChange = cantNoChange + 1;
+        else
+            globalMin = minFit(i);
+            cantNoChange = 0;
+        end
         
+        % plot the picture of iteration
+        figure(2);
+        plot(1:i,minFit,'r--');
+        xlabel('Iteration');
+        ylabel('Fitness');
+        title(sprintf('Iteration=%d, Fitness=%9.9f',i,minFit(i)));
+        grid on;
+        hold on;
+        i = i + 1;
+         
     end
 end
 

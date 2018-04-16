@@ -10,6 +10,7 @@
 # MATLAB trash #
 ################
 *.m~
+*.asv
 
 # Packages #
 ############
