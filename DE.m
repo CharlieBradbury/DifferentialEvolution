@@ -77,6 +77,8 @@ function DE(funcObj, populationSize, problemSize, Inf, Sup, F, CR, selectionType
         %Y(j,:)=funcObj(X(j,:));
         % Select the lowest fitness value
         minFit(i) = min(XF)
+        avgFit(i) = mean(XF)
+        stdFit(i) = std(XF)
         
         if (globalMin == minFit(i))
             cantNoChange = cantNoChange + 1;
@@ -85,16 +87,18 @@ function DE(funcObj, populationSize, problemSize, Inf, Sup, F, CR, selectionType
             cantNoChange = 0;
         end
         
-        % plot the picture of iteration
-        figure(2);
-        plot(1:i,minFit,'r--');
-        xlabel('Iteration');
-        ylabel('Fitness');
-        title(sprintf('Iteration=%d, Fitness=%9.9f',i,minFit(i)));
-        grid on;
-        hold on;
+        if (cantNoChange >= maxIterations || i + 1 > maxEvaluations)
+            % plot the picture of iteration
+            figure(2);
+            plot(1:i,minFit,1:i,avgFit,1:i,stdFit);
+            legend({'Best', 'Average', 'Standard Deviation'});
+            xlabel('Iteration');
+            ylabel('Fitness');
+            title(sprintf('Iteration=%d, Fitness=%9.9f',i,minFit(i)));
+            grid on;
+            hold on;
+        end
         i = i + 1;
-         
     end
 end
 
