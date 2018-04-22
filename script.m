@@ -31,7 +31,7 @@ F = 0.7;
 VInf = [27.5 27.5];
 VSup = [100 100];
 CR = 0.7;
-maxEvaluations = 16;
+maxEvaluations = 30;
 maxIterations = 2;
 
 populationSize = 5;
@@ -39,5 +39,5 @@ selectionType = 'random';
 crossover = 'bin';
 
 %Call the algorithm
-DE(funcObj, populationSize, problemSize, VInf, VSup, F, CR, selectionType,crossover, maxIterations, maxEvaluations)
+DE(funcObj, problemSize, populationSize, problemSize, VInf, VSup, F, CR, selectionType,crossover, maxIterations, maxEvaluations)
 end
