@@ -31,7 +31,7 @@ F = 0.7;
 VInf = [27.5 27.5];
 VSup = [100 100];
 CR = 0.7;
-maxEvaluations = 10;
+maxEvaluations = 16;
 maxIterations = 2;
 
 populationSize = 5;

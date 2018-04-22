@@ -1,7 +1,10 @@
 function DE(funcObj, populationSize, problemSize, Inf, Sup, F, CR, selectionType,crossover, maxIterations, maxEvaluations)
     X = generatePopulation(populationSize, problemSize, Inf, Sup);
+    
+    evalCant = 0;
     XF = zeros(populationSize, 1);
     for k = 1 : populationSize
+        evalCant = evalCant + 1;
         XF(k) = funcObj(X(k,:))
     end
     
@@ -10,7 +13,7 @@ function DE(funcObj, populationSize, problemSize, Inf, Sup, F, CR, selectionType
     i = 1;
     
     %Stop when it has reach a fixed amount of evaluation of the fitness
-    while i <= maxEvaluations && cantNoChange < maxIterations
+    while evalCant <= maxEvaluations && cantNoChange < maxIterations
         %for each individual in the population
         for j= 1:populationSize
             %Trial or random selection of individuals
@@ -70,6 +73,7 @@ function DE(funcObj, populationSize, problemSize, Inf, Sup, F, CR, selectionType
                 NG(j,:)  = X(j,:);
                 NGF(j) = XF(j);
             end
+            evalCant = evalCant + 1;
         end
 		X = NG
         XF = NGF
@@ -87,7 +91,7 @@ function DE(funcObj, populationSize, problemSize, Inf, Sup, F, CR, selectionType
             cantNoChange = 0;
         end
         
-        if (cantNoChange >= maxIterations || i + 1 > maxEvaluations)
+        if (cantNoChange >= maxIterations || evalCant >= maxEvaluations)
             % plot the picture of iteration
             figure(2);
             plot(1:i,minFit,1:i,avgFit,1:i,stdFit);
