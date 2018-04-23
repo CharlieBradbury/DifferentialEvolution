@@ -1,22 +1,20 @@
 function output = script()
-    prompt = 'Funci贸n objetivo (introducirla como string): ';
+    prompt = 'Funci髇 objetivo (introducirla como string): ';
     funcObj = input(prompt)
-    %funcObj = inline(str);
-    display(funcObj);
     
     prompt = 'Cantidad de especies a manejar: ';
     numSpecies = input(prompt)
     
-    prompt = 'Tama駉 de poblacion por individuo: ';
+    prompt = 'Tama駉 de poblaci髇 por individuo: ';
     populationSize = input(prompt)
 
     prompt = 'Cantidad de variables por individuo: ';
     problemSize = input(prompt)
     
-    prompt = 'Tipo de cooperaci贸n (random o trial): ';
+    prompt = 'Tipo de cooperaci髇 (random o trial): ';
     cooperationType = input(prompt)
     
-    prompt = 'Tipo de selecci贸n (random o trial): ';
+    prompt = 'Tipo de selecci髇 (random o trial): ';
     selectionType = input(prompt)
     
     prompt = 'Tipo de crossover (bin or exp): ';
@@ -34,13 +32,13 @@ function output = script()
     prompt = 'Tasa de cruza: ';
     CR = input(prompt)
 
-    prompt = 'M谩ximo n煤mero de evaluaciones para funci贸n objetivo: ';
+    prompt = 'M醲imo n鷐ero de evaluaciones para funci髇 objetivo: ';
     maxEvaluations = input(prompt)
  
-    prompt = 'N煤mero m谩ximo de iteraciones evaluaci贸n sin mejora: ';
+    prompt = 'N鷐ero m醲imo de iteraciones evaluaci髇 sin mejora: ';
     maxIterationsNoChange = input(prompt)
     
-    prompt = 'N煤mero m谩ximo de iteraciones: ';
+    prompt = 'N鷐ero m醲imo de iteraciones: ';
     maxIterations = input(prompt)
 
 %Call the algorithm

@@ -37,13 +37,17 @@ function output = CCEA(funcObj, numSpecies, populationSize, problemSize, Inf, Su
         end
         bestSpecies(s) = speciesMin(s);
     end
+    % Select the lowest fitness value
+    minFit(1) = min(speciesMin);
+    avgFit(1) = mean(speciesMin);
+    stdFit(1) = std(speciesMin);
     % Obtain best solution from cooperation values
-    globalMin = min(speciesMin);
+    globalMin(1) = min(speciesMin);
     cantNoChange = 0;
-    i = 1;
+    i = 2;
     
     %Stop when it has reach a fixed amount of evaluation of the fitness
-    while i <= maxIterations && evalCant < maxEvaluations && cantNoChange < maxIterationsNoChange
+    while i - 1 <= maxIterations && evalCant < maxEvaluations && cantNoChange < maxIterationsNoChange
         %For each species
         for s = 1 : numSpecies
             %for each individual in the population
@@ -128,33 +132,36 @@ function output = CCEA(funcObj, numSpecies, populationSize, problemSize, Inf, Su
         avgFit(i) = mean(speciesMin);
         stdFit(i) = std(speciesMin);
         
-        if (globalMin <= minFit(i))
+        if (globalMin(i-1) <= minFit(i))
+            globalMin(i) = globalMin(i-1);
             cantNoChange = cantNoChange + 1;
         else
-            globalMin = minFit(i);
+            globalMin(i) = minFit(i);
             cantNoChange = 0;
         end
         
-        if (i + 1 > maxIterations || cantNoChange >= maxIterationsNoChange || evalCant >= maxEvaluations)
+        if (i > maxIterations || cantNoChange >= maxIterationsNoChange || evalCant >= maxEvaluations)
             % plot the picture of iteration
             figure(2);
-            plot(1:i,minFit,1:i,avgFit,1:i,stdFit);
+            plot(1:i-1,minFit(2:i),1:i-1,avgFit(2:i),1:i-1,stdFit(2:i));
             legend({'Best', 'Average', 'Standard Deviation'});
             xlabel('Iteration');
             ylabel('Fitness');
-            title(sprintf('Iteration=%d, Fitness=%9.9f',i,minFit(i)));
+            title(sprintf('Iteration=%d, Fitness=%9.9f',i-1,minFit(i)));
             grid on;
             hold on;
         end
         i = i + 1;
     end
     
+    details = transpose(vertcat(0:length(minFit)-1,minFit,avgFit,stdFit,globalMin));
+    
     output = struct;
     output(1).Students = {'Jorge Andrés González Borboa','Oscar Daniel González Sosa','Barbara Valdez Mireles'};
     output(1).IDs = {'A01280927','A00816447','A01175920'};
-    output(1).best_fitness = globalMin;
+    output(1).best_fitness = globalMin(end);
     output(1).best_fitness_per_fitness = bestSpecies;
-    output(1).details = 0;
-    output(1).min_iterations = i - 1 - cantNoChange;
+    output(1).details = array2table(details,'VariableNames',{'Iteration', 'BestPerIteration', 'AvgPerIteration', 'StdPerIteration', 'BestSolution'});
+    output(1).min_iterations = length(minFit) - 1 - cantNoChange;
 end
 
