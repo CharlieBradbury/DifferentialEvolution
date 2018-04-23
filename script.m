@@ -1,43 +1,48 @@
-function script()
-% prompt = 'Función objetivo introducirla como string: ';
-% str = input(prompt)
-% funcObj = inline(str);
-% display(funcObj);
+function output = script()
+    prompt = 'Función objetivo (introducirla como string): ';
+    funcObj = input(prompt)
+    %funcObj = inline(str);
+    display(funcObj);
+    
+    prompt = 'Cantidad de especies a manejar: ';
+    numSpecies = input(prompt)
+    
+    prompt = 'Tama�o de poblacion por individuo: ';
+    populationSize = input(prompt)
 
-% prompt = 'Cantidad de variables: ';
-% problemSize = input(prompt)
-% 
-% prompt = 'Peso diferencial: ';
-% F = input(prompt)
-% 
-% prompt = 'Vector Limite Inferior: ';
-% VInf = input(prompt)
-% 
-% prompt = 'Vector Limite Superior: ';
-% VSup = input(prompt)
-% 
-% prompt = 'Tasa de cruza: ';
-% CR = input(prompt)
-% 
-% prompt = 'Máximo número de evaluaciones para función objetivo: ';
-% maxEvaluations = input(prompt)
-% 
-% prompt = 'Número máximo de iteraciones evaluación sin mejora: ';
-% maxIterations = input(prompt)
+    prompt = 'Cantidad de variables por individuo: ';
+    problemSize = input(prompt)
+    
+    prompt = 'Tipo de cooperación (random o trial): ';
+    cooperationType = input(prompt)
+    
+    prompt = 'Tipo de selección (random o trial): ';
+    selectionType = input(prompt)
+    
+    prompt = 'Tipo de crossover (bin or exp): ';
+    crossover = input(prompt)
+ 
+    prompt = 'Peso diferencial: ';
+    F = input(prompt)
+ 
+    prompt = 'Vector Limite Inferior: ';
+    VInf = input(prompt)
+ 
+    prompt = 'Vector Limite Superior: ';
+    VSup = input(prompt)
+    
+    prompt = 'Tasa de cruza: ';
+    CR = input(prompt)
 
-funcObj = @funcionObjetivo;
-problemSize = 2;
-F = 0.7;
-VInf = [27.5 27.5];
-VSup = [100 100];
-CR = 0.7;
-maxEvaluations = 30;
-maxIterations = 2;
-
-populationSize = 5;
-selectionType = 'random';
-crossover = 'bin';
+    prompt = 'Máximo número de evaluaciones para función objetivo: ';
+    maxEvaluations = input(prompt)
+ 
+    prompt = 'Número máximo de iteraciones evaluación sin mejora: ';
+    maxIterationsNoChange = input(prompt)
+    
+    prompt = 'Número máximo de iteraciones: ';
+    maxIterations = input(prompt)
 
 %Call the algorithm
-DE(funcObj, problemSize, populationSize, problemSize, VInf, VSup, F, CR, selectionType,crossover, maxIterations, maxEvaluations)
+output = CCEA(funcObj, numSpecies, populationSize, problemSize, VInf, VSup, F, CR, cooperationType, selectionType,crossover, maxIterations, maxIterationsNoChange, maxEvaluations);
 end
