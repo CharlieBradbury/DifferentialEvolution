@@ -1,4 +1,4 @@
-% output = DE(funcObj, numSpecies, populationSize, problemSize, Inf, Sup, F, CR, cooperationType, selectionType,crossover, maxIterations, maxIterationsNoChange, maxEvaluations)
+% output = DE(funcObj, populationSize, problemSize, Inf, Sup, F, CR, cooperationType, selectionType, maxIterations, maxIterationsNoChange, maxEvaluations)
 % funcObj - Fitness function handle
 % numSpecies - Number of species created
 % populationSize - Number of individuals in a species' population
@@ -13,130 +13,131 @@
 % maxIterations: Max iterations of the algorithm
 % maxIterationsNoChange: Max iterations without improving best solution
 % maxEvaluations: Max number of fitness function evaluations
-function output = CCEA(funcObj, numSpecies, populationSize, problemSize, Inf, Sup, F, CR, cooperationType, selectionType,crossover, maxIterations, maxIterationsNoChange, maxEvaluations)
+function output = CCEA(funcObj, populationSize, problemSize, Inf, Sup, F, CR, cooperationType, selectionType, maxIterations, maxIterationsNoChange, maxEvaluations)
     evalCant = 0;
     %Initialize each species
-    for s = 1 : numSpecies
-        X(s,:,:) = generatePopulation(populationSize, problemSize, Inf, Sup);
+    for s = 1 : problemSize
+        X(s,:) = generatePopulation(populationSize, 1, Inf(s), Sup(s));
         XF(s,:) = zeros(populationSize, 1);
-        %Evaluate all individuals in a species
+    end
+    %Evaluate members of each species using random cooperation
+    for s = 1 : problemSize
         for k = 1 : populationSize
+            coop = zeros(problemSize, 1);
+            for c = 1 : problemSize
+                if c == s
+                    coop(c) = X(s,k);
+                else
+                    coopIndex = selectRandom(X(c,:),1);
+                    coop(c) = X(c,coopIndex);
+                end
+            end
             evalCant = evalCant + 1;
-            XF(s,k) = funcObj(X(s,k,:));
+            XF(s,k) = funcObj(transpose(coop));
         end
+        [bestIterSpecies(s,1), index] = min(XF(s,:)); 
+        bestIterSpecies(s,2) = X(s,index);
+        bestPerSpecies(s) = bestIterSpecies(s,1);
     end
     
-    % Obtain cooperation values for each species
-    for s = 1 : numSpecies
-        if strcmp(selectionType,'random')
-            minIndexes = selectRandom(X(s,:,:),1);
-            speciesMin(s) = XF(s,minIndexes);
-        elseif strcmp(selectionType,'trial')
-            minIndexes = selectRandom(X(s,:,:),2);
-            speciesMin(s) = max(XF(s,minIndexes));
-        end
-        bestSpecies(s) = speciesMin(s);
-    end
     % Select the lowest fitness value
-    minFit(1) = min(speciesMin);
-    avgFit(1) = mean(speciesMin);
-    stdFit(1) = std(speciesMin);
+    minFit(1) = funcObj(transpose(bestIterSpecies(:,2)));
+    evalCant = evalCant + 1;
+    avgFit(1) = mean2(XF);
+    stdFit(1) = std2(XF);
     % Obtain best solution from cooperation values
-    globalMin(1) = min(speciesMin);
+    globalMin(1) = minFit(1);
     cantNoChange = 0;
     i = 2;
     
     %Stop when it has reach a fixed amount of evaluation of the fitness
     while i - 1 <= maxIterations && evalCant < maxEvaluations && cantNoChange < maxIterationsNoChange
         %For each species
-        for s = 1 : numSpecies
+        for s = 1 : problemSize
             %for each individual in the population
             for j = 1 : populationSize
                 %Trial or random selection of individuals
                 %agarrar tres index random de la matriz
-                newSpecies = selectRandom(X(s,:,:),3);
+                newSpecies = selectRandom(X(s,:),3);
 
                 %Apply directional mutation 
                 if strcmp(selectionType,'random')
-                    V = X(s,newSpecies(1),:) + F * (X(s,newSpecies(2),:) - X(s,newSpecies(3),:));
-                    for k = 1 : problemSize
-                        if V(k) > Sup(k)
-                            V(k) = Sup(k);
-                        elseif V(k) < Inf(k)
-                            V(k) = Inf(k);
-                        end
-                    end 
+                    V = X(s,newSpecies(1)) + F * (X(s,newSpecies(2)) - X(s,newSpecies(3)));
                 elseif strcmp(selectionType,'trial')
                     %select the best newSpecies
                     [~,bestIndex] = min(XF(s,newSpecies));
-                    V = X(s,newSpecies(bestIndex),:) + F * (X(s,newSpecies(2),:) - X(s,newSpecies(3),:));
+                    V = X(s,newSpecies(bestIndex)) + F * (X(s,newSpecies(2)) - X(s,newSpecies(3)));
                 end
+                
+                if V > Sup(s)
+                    V = Sup(s);
+                elseif V < Inf(s)
+                    V = Inf(s);
+                end
+                
                 %Apply to trial vector the crossover to produce a child
                 n = floor(rand()*problemSize+1);
 
-                if strcmp(crossover,'bin')
-                    %Binomial crossover
-                    for k = 1:problemSize
-                        randX = rand();
-                        if randX <= CR || k == n
-                            S(k) = V(k);
+                %Binomial crossover
+                randX = rand();
+                if randX <= CR || s == n
+                    S = V;
+                else
+                     S = X(s,j);
+                end
+                
+                %Evaluate fitness using cooperation
+                coop = zeros(problemSize, 1);
+                for c = 1 : problemSize
+                    if c == s
+                        coop(c) = S;
+                    else
+                        if strcmp(cooperationType,'random')
+                            coopIndex = selectRandom(X(c,:),1);
+                            coop(c) = X(c,coopIndex);
                         else
-                             S(k) = X(s,j,k);
+                            coopIndex = selectRandom(X(c,:),2);
+                            coop(c) = min(X(c,coopIndex));
                         end
                     end
-                elseif  strcmp(crossover,'exp')
-                    %Exponential crossover
-                    L = 1;
-                    S = X(s,j,:);
-                    randX = rand();
-                    % Do while clown fiesta
-                    S(k) = V(k);
-                    k = mod(k+1,problemSize);
-                    L = L + 1;
-                    while randX <= CR && L ~= problemSize
-                        S(k) = V(k);
-                        k = mod(k+1,problemSize);
-                        L = L + 1;
-                    end
-                end
-
-                % if the child individual is better than the current one then
-                if funcObj(S) < XF(s,j)
-                    NG(j,:) = S;
-                    NGF(j) = funcObj(S);
-                else
-                    NG(j,:)  = X(s,j,:);
-                    NGF(j) = XF(s,j);
                 end
                 evalCant = evalCant + 1;
+                coopFit = funcObj(transpose(coop));
+
+                % if the child individual is better than the current one then
+                if coopFit < XF(s,j)
+                    NG(s,j) = S;
+                    NGF(s,j) = coopFit;
+                else
+                    NG(s,j)  = X(s,j);
+                    NGF(s,j) = XF(s,j);
+                end
             end
-            X(s,:,:) = NG;
-            XF(s,:) = NGF;
-            
-            % Obtain cooperation values for species
-            if strcmp(selectionType,'random')
-                minIndexes = selectRandom(X(s,:,:),1);
-                speciesMin(s) = XF(s,minIndexes);
-            elseif strcmp(selectionType,'trial')
-                minIndexes = selectRandom(X(s,:,:),2);
-                speciesMin(s) = max(XF(s,minIndexes));
-            end
-            
-            if speciesMin(s) < bestSpecies(s)
-                bestSpecies(s) = speciesMin(s);
+            [bestIterSpecies(s,1), index] = min(NGF(s,:)); 
+            bestIterSpecies(s,2) = NG(s,index);
+            if bestIterSpecies(s,1) < bestPerSpecies(s)
+                bestPerSpecies(s) = bestIterSpecies(s,1);
             end
         end
+        disp(NG);
+        disp(NGF);
+        disp(bestIterSpecies(:,2));
+        % Update general population
+        X = NG;
+        XF = NGF;
         
         % Select the lowest fitness value
-        minFit(i) = min(speciesMin);
-        avgFit(i) = mean(speciesMin);
-        stdFit(i) = std(speciesMin);
+        minFit(i) = funcObj(transpose(bestIterSpecies(:,2)));
+        evalCant = evalCant + 1;
+        avgFit(i) = mean2(XF);
+        stdFit(i) = std2(XF);
         
         if (globalMin(i-1) <= minFit(i))
             globalMin(i) = globalMin(i-1);
             cantNoChange = cantNoChange + 1;
         else
             globalMin(i) = minFit(i);
+            disp(bestIterSpecies(:,2));
             cantNoChange = 0;
         end
         
@@ -160,7 +161,7 @@ function output = CCEA(funcObj, numSpecies, populationSize, problemSize, Inf, Su
     output(1).Students = {'Jorge Andrés González Borboa','Oscar Daniel González Sosa','Barbara Valdez Mireles'};
     output(1).IDs = {'A01280927','A00816447','A01175920'};
     output(1).best_fitness = globalMin(end);
-    output(1).best_fitness_per_fitness = bestSpecies;
+    output(1).best_fitness_per_species = bestPerSpecies;
     output(1).details = array2table(details,'VariableNames',{'Iteration', 'BestPerIteration', 'AvgPerIteration', 'StdPerIteration', 'BestSolution'});
     output(1).min_iterations = length(minFit) - 1 - cantNoChange;
 end
